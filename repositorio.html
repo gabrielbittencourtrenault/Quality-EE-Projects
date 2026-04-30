@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+  <title>Repositório de Documentos</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+
+    .top-header {
+  position: relative;
+  width: 100%;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  /* Gradiente base */
+  background: linear-gradient(120deg, #000000, #0f172a, #1e293b, #000000);
+  background-size: 300% 300%;
+
+  animation: gradientMove 6s ease infinite;
+
+  overflow: hidden;
+}
+
+/* Movimento do gradiente */
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ⚡ efeito "raio elétrico" */
+.top-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 200%;
+  height: 100%;
+
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 204, 0, 0.4),
+    rgba(59, 130, 246, 0.4),
+    transparent
+  );
+
+  animation: lightning 3s linear infinite;
+}
+
+/* animação do raio */
+@keyframes lightning {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+    .top-header h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 2px;
+  z-index: 1;
+
+  /* glow leve */
+  text-shadow:
+    0 0 8px rgba(255,255,255,0.2),
+    0 0 20px rgba(255,204,0,0.3);
+}
+
+    .container {
+      display: flex;
+      height: calc(100vh - 74px);
+    }
+
+    .sidebar {
+      width: 420px;
+      background: #0D1B2A;
+      border-right: 1px solid #ddd;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .content {
+      flex: 1;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .box {
+      background: #111827;
+      border: 1px solid #374151;
+      padding: 14px;
+      border-radius: 12px;
+      margin-bottom: 18px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: bold;
+      background:#3b82f6;
+      color: white;
+      margin-top: 10px;
+      margin-right: 8px;
+    }
+
+    .btn:hover {
+      opacity: 0.94;
+    }
+
+    .btn-secondary {
+      background: #374151;
+      color: #111827;
+    }
+
+    .item {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+      background: #1f2937;
+    }
+
+    .item strong {
+      display: block;
+      margin-bottom: 10px;
+      word-break: break-word;
+    }
+
+    .item small {
+      color: #6b7280;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+   .preview-box {
+    flex: 1;
+    background: #111827;
+    border: 1px solid #374151;
+    border-radius: 12px;
+    overflow: hidden;
+    min-height: 650px;
+}
+
+iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 650px;
+  border: none;
+  display: block;
+}
+
+    .mensagem {
+      color: #555;
+      line-height: 1.5;
+    }
+
+    .preview-hidden {
+      display: none;
+    }
+
+    .status {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #4b5563;
+    }
+
+    .titulo-secao {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+    }
+
+    .breadcrumb {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #374151;
+      word-break: break-word;
+    }
+
+    .icone {
+      margin-right: 8px;
+    }
+
+    img#imgPreview {
+      max-width: 100%;
+      max-height: 100%;
+      display: block;
+      margin: 0 auto;
+    }
+
+  </style>
+</head>
+<body>
+  <header class="top-header">
+    <h1>REPOSITÓRIO DE DOCUMENTOS</h1>
+  </header>
+
+  <div class="container">
+    <aside class="sidebar">
+      <div class="box">
+        <div><strong>Bucket:</strong> documentos</div>
+        <div id="caminhoAtual" class="breadcrumb"><strong>Caminho:</strong> /</div>
+
+        <button class="btn" onclick="carregarItens()">Atualizar</button>
+        <button class="btn btn-secondary" onclick="voltarPasta()">Voltar pasta</button>
+        <button class="btn btn-secondary" onclick="voltarPagina()">Voltar página</button>
+
+        <div id="statusRepositorio" class="status">Carregando itens...</div>
+      </div>
+
+      <div id="listaItens">
+        <p class="mensagem">Nenhum item carregado ainda.</p>
+      </div>
+    </aside>
+
+    <main class="content">
+  <div id="mensagemInicial" class="mensagem">
+    Selecione um arquivo para visualizar.
+  </div>
+
+  <div id="previewWrapper" class="preview-hidden">
+    <h2 class="titulo-secao" id="tituloPreview">Pré-visualização</h2>
+    <div class="preview-box" id="previewBox">
+      <iframe id="pdfViewer"></iframe>
+    </div>
+  </div>
+</main>
+
+  <script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const { createClient } = window.supabase;
+
+    const SUPABASE_URL = 'https://ozexptcrvvxvbizsuevd.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_jXrm5nMbDK5Ki-SwKLxQyw_kiHmr17c';
+    const BUCKET = 'documentos';
+
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const listaItens = document.getElementById('listaItens');
+    const pdfViewer = document.getElementById('pdfViewer');
+    const previewWrapper = document.getElementById('previewWrapper');
+    const mensagemInicial = document.getElementById('mensagemInicial');
+    const tituloPreview = document.getElementById('tituloPreview');
+    const statusRepositorio = document.getElementById('statusRepositorio');
+    const caminhoAtualEl = document.getElementById('caminhoAtual');
+    const previewBox = document.getElementById('previewBox');
+
+    let itens = [];
+    let caminhoAtual = '';
+
+    function atualizarBreadcrumb() {
+      caminhoAtualEl.innerHTML = `<strong>Caminho:</strong> /${caminhoAtual}`;
+    }
+
+    async function uploadArquivo(file, caminho) {
+
+  let arquivoFinal = file;
+  let nomeFinal = file.name;
+
+  const extensao = file.name.split('.').pop().toLowerCase();
+
+  // 🔥 CONVERSÃO AUTOMÁTICA
+  if (extensao === 'tif' || extensao === 'tiff') {
+    console.log('Convertendo TIFF...');
+
+    const blobConvertido = await converterTiffParaPng(file);
+
+    nomeFinal = file.name.replace(/\.(tif|tiff)$/i, '.png');
+    arquivoFinal = blobConvertido;
+  }
+
+  const { error } = await supabaseClient.storage
+    .from('documentos')
+    .upload(`${caminho}/${nomeFinal}`, arquivoFinal, {
+      upsert: true
+    });
+
+  if (error) {
+    console.error('Erro no upload:', error);
+    alert('Erro ao enviar arquivo');
+    return;
+  }
+
+  alert('Upload concluído!');
+}
+
+    async function carregarItens() {
+      try {
+        atualizarBreadcrumb();
+        statusRepositorio.textContent = 'Carregando itens...';
+        listaItens.innerHTML = '<p class="mensagem">Buscando pastas e arquivos...</p>';
+
+        const { data, error } = await supabaseClient
+          .storage
+          .from(BUCKET)
+          .list(caminhoAtual, {
+            limit: 100,
+            offset: 0,
+            sortBy: { column: 'name', order: 'asc' }
+          });
+
+        if (error) {
+          console.error('Erro ao listar itens:', error);
+          statusRepositorio.textContent = 'Erro ao carregar itens.';
+          listaItens.innerHTML = `<p class="mensagem">Erro: ${error.message}</p>`;
+          return;
+        }
+
+        itens = data || [];
+
+        if (itens.length === 0) {
+          statusRepositorio.textContent = 'Nenhum item encontrado.';
+          listaItens.innerHTML = '<p class="mensagem">Nenhum item encontrado nesta pasta.</p>';
+          return;
+        }
+
+        statusRepositorio.textContent = `${itens.length} item(ns) encontrado(s).`;
+        renderizarLista();
+      } catch (error) {
+        console.error('Erro inesperado ao carregar itens:', error);
+        statusRepositorio.textContent = 'Erro inesperado.';
+        listaItens.innerHTML = `<p class="mensagem">Erro inesperado: ${error.message}</p>`;
+      }
+    }
+
+    function renderizarLista() {
+      listaItens.innerHTML = '';
+
+      const pastas = itens.filter(item => !temExtensao(item.name));
+      const arquivos = itens.filter(item => temExtensao(item.name));
+
+      [...pastas, ...arquivos].forEach((item) => {
+        const isPasta = !temExtensao(item.name);
+
+        const div = document.createElement('div');
+        div.className = 'item';
+
+        div.innerHTML = `
+          <strong>
+            <span class="icone">${isPasta ? '📁' : '📄'}</span>${item.name}
+          </strong>
+          <small>${isPasta ? 'Pasta' : 'Arquivo'}</small>
+        `;
+
+        if (isPasta) {
+          const btnAbrir = document.createElement('button');
+          btnAbrir.className = 'btn';
+          btnAbrir.textContent = 'Abrir pasta';
+          btnAbrir.onclick = () => entrarPasta(item.name);
+          div.appendChild(btnAbrir);
+        } else {
+          const caminhoCompleto = caminhoAtual ? `${caminhoAtual}/${item.name}` : item.name;
+          const { data } = supabaseClient
+            .storage
+            .from(BUCKET)
+            .getPublicUrl(caminhoCompleto);
+
+          const publicUrl = data.publicUrl;
+
+          const btnVisualizar = document.createElement('button');
+          btnVisualizar.className = 'btn';
+          btnVisualizar.textContent = 'Visualizar';
+          btnVisualizar.onclick = () => visualizarArquivo(publicUrl, item.name);
+
+          const btnDownload = document.createElement('button');
+          btnDownload.className = 'btn btn-secondary';
+          btnDownload.textContent = 'Download';
+          btnDownload.onclick = () => baixarArquivo(publicUrl, item.name);
+
+          div.appendChild(btnVisualizar);
+          div.appendChild(btnDownload);
+        }
+
+        listaItens.appendChild(div);
+      });
+    }
+
+    function entrarPasta(nomePasta) {
+      caminhoAtual = caminhoAtual ? `${caminhoAtual}/${nomePasta}` : nomePasta;
+      carregarItens();
+    }
+
+    function voltarPasta() {
+      if (!caminhoAtual) return;
+
+      const partes = caminhoAtual.split('/');
+      partes.pop();
+      caminhoAtual = partes.join('/');
+
+      carregarItens();
+    }
+
+    function temExtensao(nome) {
+      return /\.[^/.]+$/.test(nome);
+    }
+
+    async function converterTiffParaPng(file) {
+  const buffer = await file.arrayBuffer();
+
+  const ifds = UTIF.decode(buffer);
+  UTIF.decodeImages(buffer, ifds);
+
+  const firstPage = ifds[0];
+  const rgba = UTIF.toRGBA8(firstPage);
+
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+
+  canvas.width = firstPage.width;
+  canvas.height = firstPage.height;
+
+  const imageData = ctx.createImageData(canvas.width, canvas.height);
+  imageData.data.set(rgba);
+  ctx.putImageData(imageData, 0, 0);
+
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => {
+      resolve(blob);
+    }, 'image/png');
+  });
+}
+
+async function uploadArquivo(file, caminho) {
+  let arquivoFinal = file;
+  let nomeFinal = file.name;
+
+  const extensao = file.name.split('.').pop().toLowerCase();
+
+  // 🚀 UPLOAD PARA SUPABASE
+  const { data, error } = await supabaseClient.storage
+    .from('documentos')
+    .upload(`${caminho}/${nomeFinal}`, arquivoFinal, {
+      upsert: true
+    });
+
+  if (error) {
+    console.error('Erro no upload:', error);
+    alert('Erro ao enviar arquivo');
+    return;
+  }
+
+  console.log('Upload concluído:', data);
+}
+
+async function enviarArquivo() {
+  const input = document.getElementById('inputUpload');
+  const file = input.files[0];
+
+  if (!file) {
+    alert('Selecione um arquivo');
+    return;
+  }
+
+  const caminho = 'R1312/SFA'; // ou dinâmico
+
+  await uploadArquivo(file, caminho);
+
+  alert('Arquivo enviado com sucesso!');
+}
+
+   function visualizarArquivo(url, nomeArquivo) {
+
+  const extensao = nomeArquivo.split('.').pop().toLowerCase();
+
+  // 👉 ATIVA PREVIEW SEMPRE
+  tituloPreview.textContent = `Pré-visualização - ${nomeArquivo}`;
+  previewWrapper.style.display = 'block';
+  mensagemInicial.style.display = 'none';
+
+  // 👉 LIMPA preview anterior (sem destruir iframe)
+  const canvasAntigo = previewBox.querySelector('canvas');
+  if (canvasAntigo) canvasAntigo.remove();
+
+  const imagemAntiga = document.getElementById('imgPreview');
+  if (imagemAntiga) imagemAntiga.remove();
+
+  // =========================
+  // 🔵 PDF
+  // =========================
+  if (extensao === 'pdf') {
+
+    pdfViewer.style.display = 'block';
+    pdfViewer.src = url;
+
+    // abre em nova aba
+    window.open(url, '_blank');
+
+    return;
+  }
+
+  // =========================
+  // 🟢 IMAGENS
+  // =========================
+  if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(extensao)) {
+
+    pdfViewer.style.display = 'none';
+    pdfViewer.src = '';
+
+    const img = document.createElement('img');
+    img.id = 'imgPreview';
+    img.src = url;
+    img.style.maxWidth = '100%';
+    img.style.maxHeight = '100%';
+    img.style.display = 'block';
+    img.style.margin = '0 auto';
+
+    previewBox.appendChild(img);
+
+    return;
+  }
+
+  // =========================
+  // ⚪ OUTROS TIPOS
+  // =========================
+  pdfViewer.style.display = 'none';
+  pdfViewer.src = '';
+
+  tituloPreview.textContent = `Pré-visualização indisponível - ${nomeArquivo}`;
+}
+
+async function visualizarTiff(url) {
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error('Falha no fetch');
+    }
+
+    const buffer = await response.arrayBuffer();
+
+    const ifds = UTIF.decode(buffer);
+
+    if (!ifds || ifds.length === 0) {
+      throw new Error('TIFF inválido');
+    }
+
+    UTIF.decodeImages(buffer, ifds);
+
+    const firstPage = ifds[0];
+    const rgba = UTIF.toRGBA8(firstPage);
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = firstPage.width;
+    canvas.height = firstPage.height;
+
+    const imageData = ctx.createImageData(canvas.width, canvas.height);
+    imageData.data.set(rgba);
+    ctx.putImageData(imageData, 0, 0);
+
+    canvas.style.width = '100%';
+    canvas.style.height = 'auto';
+
+    previewBox.appendChild(canvas);
+
+  } catch (erro) {
+    console.error('Erro TIFF:', erro);
+
+    // 🔥 FALLBACK AUTOMÁTICO
+    window.open(url, '_blank');
+
+    tituloPreview.textContent = 'TIFF aberto em nova aba (não suportado no preview)';
+  }
+}
+
+    function baixarArquivo(url, nomeArquivo) {
+      const link = document.createElement('a');
+      link.href = `${url}?download=${encodeURIComponent(nomeArquivo)}`;
+      link.download = nomeArquivo;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+
+    function voltarPagina() {
+      window.location.href = 'Código colado.html';
+    }
+
+    window.carregarItens = carregarItens;
+    window.voltarPasta = voltarPasta;
+    window.voltarPagina = voltarPagina;
+
+    carregarItens();
+  </script>
+</body>
+</html>

@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Input de Erros</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f1117;
+      --surface:   #181c27;
+      --border:    #2a2f3e;
+      --accent:    #4f8ef7;
+      --accent-dim:#1e3560;
+      --text:      #e2e8f0;
+      --muted:     #6b7280;
+      --danger:    #ef4444;
+      --radius:    6px;
+      --font-ui:   'IBM Plex Sans', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 16px;
+    }
+
+    /* ── Page header ── */
+    .page-header {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .page-header .tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-dim);
+      padding: 3px 8px;
+      border-radius: 3px;
+    }
+
+    .page-header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    /* ── Card ── */
+    .card {
+      width: 100%;
+      max-width: 900px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .card-body {
+      padding: 28px 32px 32px;
+    }
+
+    /* ── Section label ── */
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+      margin: 28px 0 18px;
+    }
+    .section-label:first-child { margin-top: 0; }
+
+    /* ── Grid ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px 20px;
+    }
+
+    .span-2 { grid-column: span 2; }
+    .span-3 { grid-column: span 3; }
+
+    /* ── Field ── */
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font-ui);
+      font-size: 14px;
+      padding: 9px 12px;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+      width: 100%;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(79,142,247,.15);
+    }
+
+    .field textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .field select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+    }
+
+    .field input[type="file"] {
+      padding: 7px 12px;
+      cursor: pointer;
+      color: var(--muted);
+    }
+    .field input[type="file"]::file-selector-button {
+      background: var(--accent-dim);
+      color: var(--accent);
+      border: none;
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    /* ── Actions ── */
+    .card-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 18px 32px;
+      border-top: 1px solid var(--border);
+      background: rgba(0,0,0,.15);
+    }
+
+    .btn {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 9px 22px;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      letter-spacing: .03em;
+      transition: opacity .15s, transform .1s;
+    }
+    .btn:active { transform: scale(.97); }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .btn-secondary:hover { border-color: var(--text); color: var(--text); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { opacity: .88; }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .span-2, .span-3 { grid-column: span 1; }
+      .card-body { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="page-header">
+    <span class="tag">PEV</span>
+    <h1>Input de Erros</h1>
+  </header>
+
+  <div class="card">
+    <div class="card-body">
+
+      <!-- Identificação -->
+      <p class="section-label">Identificação</p>
+      <div class="form-grid">
+
+        <div class="field">
+          <label>Projeto</label>
+          <select id="projeto">
+            <option value="">Selecione</option>
+            <option>R1312</option>
+            <option>R1312 - EAWD</option>
+            <option>XDF</option>
+            <option>P145 - EX5 Híbrido</option>
+            <option></option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>PJI</label>
+          <input id="pji" type="text" placeholder="—" />
+        </div>
+
+        <div class="field">
+          <label>SV</label>
+          <input id="sv" type="text" placeholder="—" />
+        </div>
+
+        <div class="field">
+          <label>Fase</label>
+          <select id="fase">
+            <option value="">Selecione</option>
+            <option>ABVC</option>
+            <option>ABPT</option>
+            <option>PPC</option>
+            <option>SOP</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Estágios PEV</label>
+          <select id="estagios_pev">
+            <option value="">Selecione</option>
+            <option>AFF</option>
+            <option>ST0</option>
+            <option>ST1</option>
+            <option>ST2</option>
+            <option>Paralelismo</option>
+            <option>Rolagem</option>
+            <option>HOD</option>
+            <option>ADAS</option>
+            <option>SEV</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Data de produção</label>
+          <input id="data_producao" type="date" />
+        </div>
+
+      </div>
+
+      <!-- Diagnóstico -->
+      <p class="section-label">Diagnóstico</p>
+      <div class="form-grid">
+
+        <div class="field span-3">
+          <label>Efeito cliente</label>
+          <textarea id="efeito_cliente" 
+          placeholder="Descreva o efeito percebido pelo cliente…"></textarea>
+        </div>
+
+        <div class="field span-3">
+          <label>Modo de falha</label>
+          <textarea id="modo_falha"
+           placeholder="Descreva o modo de falha…"></textarea>
+        </div>
+
+        <div class="field span-3">
+          <label>Causa</label>
+          <textarea id="causa"
+          placeholder="Descreva a causa raiz…"></textarea>
+        </div>
+
+        <div class="field">
+          <label>Calculador</label>
+          <select id="calculador">
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Área</label>
+          <select id="area">
+            <option value="">Selecione</option>
+            <option>Produto</option>
+            <option>Processo</option>
+            <option>Logística</option>
+            <option>MOP</option>
+            <option>Fornecedor</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>DTC / Ticket PEV</label>
+          <input id="dtc_ticket_pev" type="text" placeholder="—" />
+        </div>
+
+        <div class="field span-3">
+          <label>Erros em cascata</label>
+          <textarea id="erros_cascata" placeholder="Liste os erros correlacionados…"></textarea>
+        </div>
+
+      </div>
+
+      <!-- Responsáveis -->
+      <p class="section-label">Responsáveis</p>
+      <div class="form-grid">
+
+        <div class="field">
+          <label>Piloto</label>
+          <select id="piloto">
+            <option value="">Selecione</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Analista EE</label>
+          <select id="analista_ee">
+            <option value="">Selecione</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Prompt</label>
+          <input id="prompt" type="text" />
+        </div>
+
+      </div>
+
+      <!-- Plano & Tempos -->
+      <p class="section-label">Plano & Tempos</p>
+      <div class="form-grid">
+
+        <div class="field span-3">
+          <label>Plano de ação</label>
+          <textarea id="plano_acao"
+          placeholder="Descreva as ações previstas…"></textarea>
+        </div>
+
+        <div class="field">
+          <label>Tempo de análise</label>
+          <input id="tempo_analise" type="time" />
+        </div>
+
+        <div class="field">
+          <label>Tempo de retoque</label>
+          <input id="tempo_retoque" type="time" />
+        </div>
+
+        <div class="field span-3">
+          <label>Anexos</label>
+          <input id="anexos" type="file" multiple />
+        </div>
+
+      </div>
+
+    </div><!-- /.card-body -->
+
+    <div class="card-footer">
+      <button class="btn btn-secondary" type="button">Cancelar</button>
+      <button class="btn btn-primary" id="btnSalvar">Salvar</button>
+    </div>
+  </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1"></script>
+
+<script>
+  const supabase = window.supabase.createClient(
+    "https://ozexptcrvvxvbizsuevd.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im96ZXhwdGNydnZ4dmJpenN1ZXZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMTk5NjIsImV4cCI6MjA5MTg5NTk2Mn0.83Y9ab4giKMt_v08cjnK3xWXnhVbAcPxOfinzkOJV9g"
+  );
+
+  const calculadores_R1312 = [
+  "INV-ME",
+  "INV-RE1",
+  "LBC",
+  "LBC2",
+  "LDCM",
+  "METER-sub",
+  "MIU",
+  "UCC-ITM",
+  "Parking Sonar",
+  "PBD-PTL",
+  "S-GW",
+  "SOW RL",
+  "SOW RR",
+  "Superviser-DCDC",
+  "TDB",
+  "UCH",
+  "UPC-EMM",
+  "VSP",
+  "WCGS",
+  "Airbag-SRS",
+  "AT",
+  "AVM",
+  "BMS Master",
+  "BSG 48V",
+  "CAN",
+  "CAN2",
+  "DCM",
+  "DMC",
+  "ECM",
+  "EPS",
+  "e-ShiftAct",
+  "FCAM",
+  "FRRAD",
+  "GBA",
+  "HFM",
+  "HVAC",
+  "IDM-CDM",
+  "HVC-HCM-VCM",
+  "4WD",
+  "AAU",
+  "ABS-VDC",
+  "ADP"
+];
+
+  const calculadoresPorProjeto = {
+  "P145 - EX5 Híbrido": [
+    "ZCUP - Zone Controller Unit Passenger",
+    "ZCUD - Zone Controller Unit Driver",
+    "DDS - Driver Door Switch",
+    "EGSM - Electronic Gear Selector Module",
+    "SWM2 - Steering Wheel Module",
+    "SAS - Steering Angle Sensor",
+    "RLSM - Rain and Light Sensor Module",
+    "CCSM - Center Console Switch Module",
+    "POT - Power Operated Tailgate module",
+    "SWSM4 - Steering Wheel Switch Module",
+    "ECM4 - Engine Control Module",
+    "PCM - Powertrain Control Module",
+    "CDD3 - On-board charger",
+    "EVCC - EV charging controller",
+    "BECM2 - Battery Management System",
+    "ECPM - Engine Cooling Pump",
+    "BCM4 - Brake Control Module",
+    "ASDM4 - Active Safety Domain Master",
+    "SODL5 - Side Obstacle Detection Left",
+    "SODR5 - Side Obstacle Detection Right",
+    "OHC - OverHead Console",
+    "ALM1 - Ambient Lights",
+    "ALM2 - Ambient Lights",
+    "EDCP - Electric Coolant Pump",
+    "HVAH - High Voltage Air Heating",
+    "BEXV2 - Expansion Valve",
+    "ACCM - AC Compressor",
+    "PSCM1a - Power Steering",
+    "SRM - Sun Roof Module",
+    "AUD - Audio Module",
+    "DHU1 - Display Head Unit",
+    "HUD1 - Head Up Display",
+    "TCAM4 - Telematics Module",
+    "WPC1 - Wireless Charger",
+    "FHCU - Fuel Heater",
+    "SRS3 - Airbag System"
+  ],
+
+  "R1312": calculadores_R1312,
+  "R1312 - EAWD": calculadores_R1312,
+
+   "XDF": [
+    "EVC-HCM-VCM_29b",
+    "ABS-VDC_29b",
+    "ADAS-Sub",
+    "Airbag-SRS",
+    "AT_29b",
+    "Audio",
+    "BCB-OBC_29b",
+    "BLE VK",
+    "BSG 48v",
+    "CAN",
+    "CAN Adapter BAC",
+    "CAN2",
+    "Controlographe",
+    "DCM",
+    "DLOCK",
+    "DMC",
+    "ECM_29",
+    "EPS",
+    "e-ShiftAct",
+    "FCAM",
+    "HFE",
+    "HFM",
+    "HVAC",
+    "HVAC2",
+    "IDM-CDM",
+    "INV-ME_29b",
+    "LBC HEV",
+    "LBC2_29b",
+    "MIU",
+    "Navigation-UCC-TIM",
+    "Parking Sonar",
+    "PLC-PLGW",
+    "SCU",
+    "S-GW",
+    "SOW Front Left",
+    "SOW Front Right",
+    "SOW Rear Left",
+    "SOW Rear Right",
+    "Superviseur DCDC_29b",
+    "TDB",
+    "UCH",
+    "UDM_29b",
+    "UPC-EMM",
+    "VSP",
+    "WCGS"
+  ]
+};
+
+function atualizarCalculadores() {
+  const projeto = document.getElementById("projeto").value;
+  const selectCalculador = document.getElementById("calculador");
+
+  // limpa opções atuais
+  selectCalculador.innerHTML = '<option value="">Selecione</option>';
+
+  const lista = calculadoresPorProjeto[projeto];
+
+  if (!lista) return;
+
+  lista.forEach(item => {
+    const option = document.createElement("option");
+    option.value = item;
+    option.textContent = item;
+    selectCalculador.appendChild(option);
+  });
+}
+
+  // 🎯 Evento do botão
+  document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("btnSalvar").addEventListener("click", salvarRegistro);
+  document.getElementById("projeto").addEventListener("change", atualizarCalculadores);
+});
+
+  async function salvarRegistro() {
+
+    // 📥 Captura dos dados
+    const data = {
+      projeto: document.getElementById("projeto").value,
+      pji: parseFloat(document.getElementById("pji").value) || null,
+      sv: document.getElementById("sv").value,
+      efeito_cliente: document.getElementById("efeito_cliente").value,
+      modo_falha: document.getElementById("modo_falha").value,
+      causa: document.getElementById("causa").value,
+      calculador: document.getElementById("calculador").value,
+      area: document.getElementById("area").value,
+      estagios_pev: document.getElementById("estagios_pev").value,
+      piloto: document.getElementById("piloto").value,
+      analista_ee: document.getElementById("analista_ee").value,
+      prompt: document.getElementById("prompt").value,
+      dtc_ticket_pev: document.getElementById("dtc_ticket_pev").value,
+      erros_cascata: document.getElementById("erros_cascata").value,
+      plano_acao: document.getElementById("plano_acao").value,
+      tempo_analise: document.getElementById("tempo_analise").value,
+      tempo_retoque: document.getElementById("tempo_retoque").value,
+      data_producao: document.getElementById("data_producao").value,
+      fase: document.getElementById("fase").value
+    };
+
+    // 🔍 Validação mínima
+    if (!data.projeto) {
+      alert("Selecione o projeto");
+      return;
+    }
+
+    // 🚀 Envio para Supabase
+    const { error } = await supabase
+      .from("input_erros")
+      .insert([data]);
+
+    if (error) {
+  console.error("ERRO COMPLETO:", error);
+  alert(error.message);
+  return;
+  }
+
+    alert("Registro salvo com sucesso!");
+  }
+</script>
+
+</body>
+</html>
+
+
+
+

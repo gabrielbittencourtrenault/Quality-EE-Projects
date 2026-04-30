@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QUALITY EE PROJECTS</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet"/>
+
+  <style>
+
+    /* ── Reset ── */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    /* ── Base ── */
+    body {
+      background: #0f172a;
+      color: #e5e7eb;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .top-header {
+      position: relative;
+      width: 100%;
+      min-height: 90px;
+      padding: 0 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+      overflow: hidden;
+      z-index: 10;
+
+      font-family: 'Orbitron', sans-serif;
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: #fff;
+      text-shadow:
+        0 0 5px  rgba(255,255,255,0.3),
+        0 0 10px rgba(59,130,246,0.4),
+        0 0 20px rgba(255,204,0,0.3);
+
+      background: linear-gradient(120deg, #000000, #0f172a, #1e293b, #000000);
+      background-size: 300% 300%;
+      animation: gradientMove 6s ease infinite;
+
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    @keyframes gradientMove {
+      0%   { background-position: 0%   50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0%   50%; }
+    }
+
+    .top-header::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -150%;
+      width: 300%;
+      height: 100%;
+      background: linear-gradient(
+        100deg,
+        transparent 40%,
+        rgba(255,204,0,0.8) 48%,
+        rgba(59,130,246,0.8) 50%,
+        rgba(255,204,0,0.8) 52%,
+        transparent 60%
+      );
+      filter: blur(6px);
+      opacity: 0.7;
+      animation: lightning 2.5s linear infinite;
+    }
+
+    @keyframes lightning {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(100%);  }
+    }
+
+    .logo-header {
+      position: absolute;
+      left: 2px;
+      height: 90px;
+      object-fit: contain;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 260px;
+      background: #020617;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border-right: 1px solid #1e293b;
+      flex-shrink: 0;
+    }
+
+    .menu-title {
+      font-size: 14px;
+      color: #64748b;
+      margin-bottom: 10px;
+    }
+
+    .menu-item {
+      padding: 12px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .menu-item:hover  { background: #1e293b; }
+    .menu-item.active { background: #3b82f6; color: white; }
+
+    /* ── Main content ── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .content {
+      flex: 1;
+      padding: 30px;
+      overflow: auto;
+    }
+
+    .content:has(iframe) {
+      padding: 0;
+    }
+
+    .title {
+      font-size: 40px;
+      margin-bottom: 20px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="top-header">
+    <img src="logo_1.jpg" class="logo-header" alt="Logo" />
+    QUALITY EE PROJECTS
+  </div>
+
+  <!-- Layout -->
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="menu-title">MENU</div>
+      <div class="menu-item">Visão geral</div>
+      <div class="menu-item" onclick="abrirInputErros()">Registro de ocorrências</div>
+      <div class="menu-item">Visualizar base de dados</div>
+      <div class="menu-item" onclick="abrirRepositorio()">Repositório de documentos</div>
+    </div>
+
+    <!-- Content -->
+    <div class="main">
+      <div class="content" id="mainContent">
+        <div class="title">ELECTRICAL PROJECTS SYSTEM</div>
+        <p>Electrical issues reports and indicators</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function abrirInputErros() {
+      const content = document.getElementById('mainContent');
+      content.innerHTML = `
+        <iframe
+          src="input-erros.html"
+          style="width:100%; height:100%; border:none; display:block;"
+        ></iframe>
+      `;
+    }
+
+    function abrirRepositorio() {
+      window.open('repositorio.html', '_blank');
+    }
+  </script>
+
+</body>
+</html>
