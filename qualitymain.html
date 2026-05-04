@@ -160,7 +160,7 @@
 
   <!-- Header -->
   <div class="top-header">
-    <img src="logo_1.jpg" class="logo-header" alt="Logo" />
+    <img src="logo_1.png" class="logo-header" alt="Logo" />
     QUALITY EE PROJECTS
   </div>
 
@@ -171,6 +171,8 @@
     <div class="sidebar">
       <div class="menu-title">MENU</div>
       <div class="menu-item">Visão geral</div>
+      /* ______________________Criada por Fer dia 01/05/26 ___________________________*/
+      <div class="menu-item" onclick="abrirOcorrencias()">Ver ocorrências</div>
       <div class="menu-item" onclick="abrirInputErros()">Registro de ocorrências</div>
       <div class="menu-item">Visualizar base de dados</div>
       <div class="menu-item" onclick="abrirRepositorio()">Repositório de documentos</div>
@@ -199,6 +201,16 @@
 
     function abrirRepositorio() {
       window.open('repositorio.html', '_blank');
+    }
+  
+    function abrirOcorrencias() {
+      const content = document.getElementById('mainContent');
+      content.innerHTML = `
+        <iframe
+          src="visualizar-ocorrencias.html"
+          style="width:100%; height:100%; border:none; display:block;"
+        ></iframe>
+      `;
     }
   </script>
 
