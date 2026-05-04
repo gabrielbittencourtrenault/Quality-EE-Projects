@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Visualizar Ocorrências</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f1117;
+      --surface:   #181c27;
+      --surface2:  #1e2336;
+      --border:    #2a2f3e;
+      --accent:    #4f8ef7;
+      --accent-dim:#1e3560;
+      --text:      #e2e8f0;
+      --muted:     #6b7280;
+      --danger:    #ef4444;
+      --success:   #22c55e;
+      --radius:    6px;
+      --font-ui:   'IBM Plex Sans', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 32px 24px;
+    }
+
+    /* ── Header ── */
+    .page-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .page-header .tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-dim);
+      padding: 3px 8px;
+      border-radius: 3px;
+    }
+
+    .page-header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    /* ── Filters ── */
+    .filters {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr auto;
+      gap: 10px;
+      margin-bottom: 20px;
+      align-items: end;
+    }
+
+    .filter-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .filter-field label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .filter-field input,
+    .filter-field select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font-ui);
+      font-size: 13px;
+      padding: 8px 10px;
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    .filter-field input:focus,
+    .filter-field select:focus {
+      border-color: var(--accent);
+    }
+
+    .filter-field select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 28px;
+    }
+
+    .btn-clear {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: var(--radius);
+      padding: 8px 16px;
+      font-family: var(--font-ui);
+      font-size: 12px;
+      cursor: pointer;
+      transition: border-color .15s, color .15s;
+      white-space: nowrap;
+      height: 36px;
+    }
+
+    .btn-clear:hover { border-color: var(--text); color: var(--text); }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    /* ── Table ── */
+    .table-wrapper {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background .12s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--surface2); }
+
+    tbody td {
+      padding: 11px 14px;
+      color: var(--text);
+      vertical-align: middle;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .badge-projeto {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      background: var(--accent-dim);
+      color: var(--accent);
+      font-family: var(--font-mono);
+      white-space: nowrap;
+    }
+
+    .btn-edit {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--accent);
+      border-radius: var(--radius);
+      padding: 5px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      transition: background .15s, border-color .15s;
+      white-space: nowrap;
+    }
+
+    .btn-edit:hover { background: var(--accent-dim); border-color: var(--accent); }
+
+    /* ── Empty / loading ── */
+    .empty-state {
+      padding: 48px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.65);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 860px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .modal-header h2 {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: color .15s, background .15s;
+    }
+
+    .modal-close:hover { color: var(--text); background: var(--surface2); }
+
+    .modal-body {
+      padding: 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    /* Modal form (reutiliza padrão do input-erros) */
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+      margin: 24px 0 16px;
+    }
+    .section-label:first-child { margin-top: 0; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px 18px;
+    }
+
+    .span-2 { grid-column: span 2; }
+    .span-3 { grid-column: span 3; }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .field label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font-ui);
+      font-size: 13px;
+      padding: 8px 10px;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+      width: 100%;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(79,142,247,.15);
+    }
+
+    .field textarea { resize: vertical; min-height: 72px; }
+
+    .field select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 28px;
+    }
+
+    .btn {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 9px 22px;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      transition: opacity .15s, transform .1s;
+    }
+    .btn:active { transform: scale(.97); }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .btn-secondary:hover { border-color: var(--text); color: var(--text); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { opacity: .88; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 18px;
+      font-size: 13px;
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toast.show { display: flex; }
+    .toast.ok  { border-color: var(--success); color: var(--success); }
+    .toast.err { border-color: var(--danger);  color: var(--danger); }
+  </style>
+</head>
+<body>
+
+  <header class="page-header">
+    <span class="tag">PEV</span>
+    <h1>Visualizar Ocorrências</h1>
+  </header>
+
+  <!-- Filtros -->
+  <div class="filters">
+    <div class="filter-field">
+      <label>Busca livre</label>
+      <input type="text" id="f-texto" placeholder="Efeito, modo de falha, causa, calculador…" oninput="aplicarFiltros()"/>
+    </div>
+    <div class="filter-field">
+      <label>Projeto</label>
+      <select id="f-projeto" onchange="aplicarFiltros()">
+        <option value="">Todos</option>
+        <option>R1312</option>
+        <option>R1312 - EAWD</option>
+        <option>XDF</option>
+        <option>P145 - EX5 Híbrido</option>
+      </select>
+    </div>
+    <div class="filter-field">
+      <label>Fase</label>
+      <select id="f-fase" onchange="aplicarFiltros()">
+        <option value="">Todas</option>
+        <option>ABVC</option>
+        <option>ABPT</option>
+        <option>PPC</option>
+        <option>SOP</option>
+      </select>
+    </div>
+    <div class="filter-field">
+      <label>Área</label>
+      <select id="f-area" onchange="aplicarFiltros()">
+        <option value="">Todas</option>
+        <option>Produto</option>
+        <option>Processo</option>
+        <option>Logística</option>
+        <option>MOP</option>
+        <option>Fornecedor</option>
+      </select>
+    </div>
+    <button class="btn-clear" onclick="limparFiltros()">Limpar</button>
+  </div>
+
+  <div class="stats-bar" id="statsBar">Carregando…</div>
+
+  <!-- Tabela -->
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Projeto</th>
+          <th>PJI</th>
+          <th>Fase</th>
+          <th>Estágio</th>
+          <th>Calculador</th>
+          <th>Área</th>
+          <th>Efeito cliente</th>
+          <th>Data produção</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tabela-body">
+        <tr><td colspan="9"><div class="empty-state">Carregando dados…</div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal de edição -->
+  <div class="modal-overlay" id="modalOverlay" onclick="fecharModalSeFora(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Editar Ocorrência</h2>
+        <button class="modal-close" onclick="fecharModal()">×</button>
+      </div>
+      <div class="modal-body">
+
+        <p class="section-label">Identificação</p>
+        <div class="form-grid">
+          <div class="field">
+            <label>Projeto</label>
+            <select id="m-projeto" onchange="atualizarCalculadoresModal()">
+              <option value="">Selecione</option>
+              <option>R1312</option>
+              <option>R1312 - EAWD</option>
+              <option>XDF</option>
+              <option>P145 - EX5 Híbrido</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>PJI</label>
+            <input id="m-pji" type="text" />
+          </div>
+          <div class="field">
+            <label>SV</label>
+            <input id="m-sv" type="text" />
+          </div>
+          <div class="field">
+            <label>Fase</label>
+            <select id="m-fase">
+              <option value="">Selecione</option>
+              <option>ABVC</option>
+              <option>ABPT</option>
+              <option>PPC</option>
+              <option>SOP</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Estágios PEV</label>
+            <select id="m-estagios_pev">
+              <option value="">Selecione</option>
+              <option>AFF</option>
+              <option>ST0</option>
+              <option>ST1</option>
+              <option>ST2</option>
+              <option>Paralelismo</option>
+              <option>Rolagem</option>
+              <option>HOD</option>
+              <option>ADAS</option>
+              <option>SEV</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Data de produção</label>
+            <input id="m-data_producao" type="date" />
+          </div>
+        </div>
+
+        <p class="section-label">Diagnóstico</p>
+        <div class="form-grid">
+          <div class="field span-3">
+            <label>Efeito cliente</label>
+            <textarea id="m-efeito_cliente"></textarea>
+          </div>
+          <div class="field span-3">
+            <label>Modo de falha</label>
+            <textarea id="m-modo_falha"></textarea>
+          </div>
+          <div class="field span-3">
+            <label>Causa</label>
+            <textarea id="m-causa"></textarea>
+          </div>
+          <div class="field">
+            <label>Calculador</label>
+            <select id="m-calculador"></select>
+          </div>
+          <div class="field">
+            <label>Área</label>
+            <select id="m-area">
+              <option value="">Selecione</option>
+              <option>Produto</option>
+              <option>Processo</option>
+              <option>Logística</option>
+              <option>MOP</option>
+              <option>Fornecedor</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>DTC / Ticket PEV</label>
+            <input id="m-dtc_ticket_pev" type="text" />
+          </div>
+          <div class="field span-3">
+            <label>Erros em cascata</label>
+            <textarea id="m-erros_cascata"></textarea>
+          </div>
+        </div>
+
+        <p class="section-label">Responsáveis</p>
+        <div class="form-grid">
+          <div class="field">
+            <label>Piloto</label>
+            <input id="m-piloto" type="text" />
+          </div>
+          <div class="field">
+            <label>Analista EE</label>
+            <input id="m-analista_ee" type="text" />
+          </div>
+          <div class="field">
+            <label>Prompt</label>
+            <input id="m-prompt" type="text" />
+          </div>
+        </div>
+
+        <p class="section-label">Plano & Tempos</p>
+        <div class="form-grid">
+          <div class="field span-3">
+            <label>Plano de ação</label>
+            <textarea id="m-plano_acao"></textarea>
+          </div>
+          <div class="field">
+            <label>Tempo de análise</label>
+            <input id="m-tempo_analise" type="time" />
+          </div>
+          <div class="field">
+            <label>Tempo de retoque</label>
+            <input id="m-tempo_retoque" type="time" />
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="fecharModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarEdicao()">Salvar alterações</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1"></script>
+  <script>
+    const supabase = window.supabase.createClient(
+      "https://ozexptcrvvxvbizsuevd.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im96ZXhwdGNydnZ4dmJpenN1ZXZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMTk5NjIsImV4cCI6MjA5MTg5NTk2Mn0.83Y9ab4giKMt_v08cjnK3xWXnhVbAcPxOfinzkOJV9g"
+    );
+
+    // ── Listas de calculadores (cópia do input-erros.html) ──
+    const calculadores_R1312 = ["INV-ME","INV-RE1","LBC","LBC2","LDCM","METER-sub","MIU","UCC-ITM","Parking Sonar","PBD-PTL","S-GW","SOW RL","SOW RR","Superviser-DCDC","TDB","UCH","UPC-EMM","VSP","WCGS","Airbag-SRS","AT","AVM","BMS Master","BSG 48V","CAN","CAN2","DCM","DMC","ECM","EPS","e-ShiftAct","FCAM","FRRAD","GBA","HFM","HVAC","IDM-CDM","HVC-HCM-VCM","4WD","AAU","ABS-VDC","ADP"];
+
+    const calculadoresPorProjeto = {
+      "R1312": calculadores_R1312,
+      "R1312 - EAWD": calculadores_R1312,
+      "P145 - EX5 Híbrido": ["ZCUP - Zone Controller Unit Passenger","ZCUD - Zone Controller Unit Driver","DDS - Driver Door Switch","EGSM - Electronic Gear Selector Module","SWM2 - Steering Wheel Module","SAS - Steering Angle Sensor","RLSM - Rain and Light Sensor Module","CCSM - Center Console Switch Module","POT - Power Operated Tailgate module","SWSM4 - Steering Wheel Switch Module","ECM4 - Engine Control Module","PCM - Powertrain Control Module","CDD3 - On-board charger","EVCC - EV charging controller","BECM2 - Battery Management System","ECPM - Engine Cooling Pump","BCM4 - Brake Control Module","ASDM4 - Active Safety Domain Master","SODL5 - Side Obstacle Detection Left","SODR5 - Side Obstacle Detection Right","OHC - OverHead Console","ALM1 - Ambient Lights","ALM2 - Ambient Lights","EDCP - Electric Coolant Pump","HVAH - High Voltage Air Heating","BEXV2 - Expansion Valve","ACCM - AC Compressor","PSCM1a - Power Steering","SRM - Sun Roof Module","AUD - Audio Module","DHU1 - Display Head Unit","HUD1 - Head Up Display","TCAM4 - Telematics Module","WPC1 - Wireless Charger","FHCU - Fuel Heater","SRS3 - Airbag System"],
+      "XDF": ["EVC-HCM-VCM_29b","ABS-VDC_29b","ADAS-Sub","Airbag-SRS","AT_29b","Audio","BCB-OBC_29b","BLE VK","BSG 48v","CAN","CAN Adapter BAC","CAN2","Controlographe","DCM","DLOCK","DMC","ECM_29","EPS","e-ShiftAct","FCAM","HFE","HFM","HVAC","HVAC2","IDM-CDM","INV-ME_29b","LBC HEV","LBC2_29b","MIU","Navigation-UCC-TIM","Parking Sonar","PLC-PLGW","SCU","S-GW","SOW Front Left","SOW Front Right","SOW Rear Left","SOW Rear Right","Superviseur DCDC_29b","TDB","UCH","UDM_29b","UPC-EMM","VSP","WCGS"]
+    };
+
+    // ── Estado ──
+    let todasOcorrencias = [];
+    let ocorrenciaEditando = null;
+
+    // ── Carregar dados ──
+    async function carregarOcorrencias() {
+      const { data, error } = await supabase
+        .from("input_erros")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        mostrarToast("Erro ao carregar dados: " + error.message, "err");
+        return;
+      }
+
+      todasOcorrencias = data || [];
+      aplicarFiltros();
+    }
+
+    // ── Filtros ──
+    function aplicarFiltros() {
+      const texto   = document.getElementById("f-texto").value.toLowerCase().trim();
+      const projeto = document.getElementById("f-projeto").value;
+      const fase    = document.getElementById("f-fase").value;
+      const area    = document.getElementById("f-area").value;
+
+      const filtradas = todasOcorrencias.filter(r => {
+        if (projeto && r.projeto !== projeto) return false;
+        if (fase    && r.fase    !== fase)    return false;
+        if (area    && r.area    !== area)    return false;
+        if (texto) {
+          const haystack = [r.efeito_cliente, r.modo_falha, r.causa, r.calculador, r.dtc_ticket_pev, r.sv, r.pji]
+            .map(v => (v || "").toLowerCase()).join(" ");
+          if (!haystack.includes(texto)) return false;
+        }
+        return true;
+      });
+
+      renderTabela(filtradas);
+    }
+
+    function limparFiltros() {
+      document.getElementById("f-texto").value   = "";
+      document.getElementById("f-projeto").value = "";
+      document.getElementById("f-fase").value    = "";
+      document.getElementById("f-area").value    = "";
+      aplicarFiltros();
+    }
+
+    // ── Renderizar tabela ──
+    function renderTabela(registros) {
+      const tbody = document.getElementById("tabela-body");
+      const stats = document.getElementById("statsBar");
+
+      stats.textContent = `${registros.length} ocorrência${registros.length !== 1 ? "s" : ""} encontrada${registros.length !== 1 ? "s" : ""} (total: ${todasOcorrencias.length})`;
+
+      if (registros.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state">Nenhuma ocorrência encontrada com os filtros selecionados.</div></td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = registros.map(r => `
+        <tr>
+          <td><span class="badge-projeto">${esc(r.projeto || "—")}</span></td>
+          <td>${esc(r.pji || "—")}</td>
+          <td>${esc(r.fase || "—")}</td>
+          <td>${esc(r.estagios_pev || "—")}</td>
+          <td>${esc(r.calculador || "—")}</td>
+          <td>${esc(r.area || "—")}</td>
+          <td title="${esc(r.efeito_cliente || "")}">${esc(truncar(r.efeito_cliente, 50))}</td>
+          <td>${formatarData(r.data_producao)}</td>
+          <td><button class="btn-edit" onclick="abrirModal(${r.id})">Editar</button></td>
+        </tr>
+      `).join("");
+    }
+
+    // ── Modal ──
+    function abrirModal(id) {
+      const r = todasOcorrencias.find(o => o.id === id);
+      if (!r) return;
+      ocorrenciaEditando = r;
+
+      // Preencher campos
+      setVal("m-projeto",       r.projeto);
+      setVal("m-pji",           r.pji);
+      setVal("m-sv",            r.sv);
+      setVal("m-fase",          r.fase);
+      setVal("m-estagios_pev",  r.estagios_pev);
+      setVal("m-data_producao", r.data_producao);
+      setVal("m-efeito_cliente",r.efeito_cliente);
+      setVal("m-modo_falha",    r.modo_falha);
+      setVal("m-causa",         r.causa);
+      setVal("m-area",          r.area);
+      setVal("m-dtc_ticket_pev",r.dtc_ticket_pev);
+      setVal("m-erros_cascata", r.erros_cascata);
+      setVal("m-piloto",        r.piloto);
+      setVal("m-analista_ee",   r.analista_ee);
+      setVal("m-prompt",        r.prompt);
+      setVal("m-plano_acao",    r.plano_acao);
+      setVal("m-tempo_analise", r.tempo_analise);
+      setVal("m-tempo_retoque", r.tempo_retoque);
+
+      // Atualizar calculadores e setar o valor
+      atualizarCalculadoresModal(r.calculador);
+
+      document.getElementById("modalOverlay").classList.add("open");
+    }
+
+    function fecharModal() {
+      document.getElementById("modalOverlay").classList.remove("open");
+      ocorrenciaEditando = null;
+    }
+
+    function fecharModalSeFora(e) {
+      if (e.target === document.getElementById("modalOverlay")) fecharModal();
+    }
+
+    function atualizarCalculadoresModal(valorAtual) {
+      const projeto = document.getElementById("m-projeto").value;
+      const sel     = document.getElementById("m-calculador");
+      sel.innerHTML = '<option value="">Selecione</option>';
+
+      const lista = calculadoresPorProjeto[projeto];
+      if (!lista) return;
+
+      lista.forEach(item => {
+        const opt = document.createElement("option");
+        opt.value = item;
+        opt.textContent = item;
+        sel.appendChild(opt);
+      });
+
+      if (valorAtual !== undefined) setVal("m-calculador", valorAtual);
+    }
+
+    async function salvarEdicao() {
+      if (!ocorrenciaEditando) return;
+
+      const updates = {
+        projeto:       document.getElementById("m-projeto").value,
+        pji:           parseFloat(document.getElementById("m-pji").value) || null,
+        sv:            document.getElementById("m-sv").value,
+        fase:          document.getElementById("m-fase").value,
+        estagios_pev:  document.getElementById("m-estagios_pev").value,
+        data_producao: document.getElementById("m-data_producao").value || null,
+        efeito_cliente:document.getElementById("m-efeito_cliente").value,
+        modo_falha:    document.getElementById("m-modo_falha").value,
+        causa:         document.getElementById("m-causa").value,
+        calculador:    document.getElementById("m-calculador").value,
+        area:          document.getElementById("m-area").value,
+        dtc_ticket_pev:document.getElementById("m-dtc_ticket_pev").value,
+        erros_cascata: document.getElementById("m-erros_cascata").value,
+        piloto:        document.getElementById("m-piloto").value,
+        analista_ee:   document.getElementById("m-analista_ee").value,
+        prompt:        document.getElementById("m-prompt").value,
+        plano_acao:    document.getElementById("m-plano_acao").value,
+        tempo_analise: document.getElementById("m-tempo_analise").value,
+        tempo_retoque: document.getElementById("m-tempo_retoque").value,
+      };
+
+      const { error } = await supabase
+        .from("input_erros")
+        .update(updates)
+        .eq("id", ocorrenciaEditando.id);
+
+      if (error) {
+        mostrarToast("Erro ao salvar: " + error.message, "err");
+        return;
+      }
+
+      // Atualizar array local
+      Object.assign(ocorrenciaEditando, updates);
+      fecharModal();
+      aplicarFiltros();
+      mostrarToast("Registro atualizado com sucesso!", "ok");
+    }
+
+    // ── Helpers ──
+    function setVal(id, val) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.value = val == null ? "" : val;
+    }
+
+    function esc(str) {
+      return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    function truncar(str, n) {
+      if (!str) return "—";
+      return str.length > n ? str.slice(0, n) + "…" : str;
+    }
+
+    function formatarData(d) {
+      if (!d) return "—";
+      const [y, m, day] = d.split("-");
+      if (!y || !m || !day) return d;
+      return `${day}/${m}/${y}`;
+    }
+
+    function mostrarToast(msg, tipo) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.className = "toast show " + (tipo || "");
+      setTimeout(() => { t.className = "toast"; }, 3500);
+    }
+
+    // ── Init ──
+    carregarOcorrencias();
+  </script>
+</body>
+</html>
